@@ -9,7 +9,7 @@ import android.os.Handler;
 
 public class SplashActivity extends AppCompatActivity {
     Handler handler;
-    final int DELAY = 1000;
+    final int DELAY = 2000;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
