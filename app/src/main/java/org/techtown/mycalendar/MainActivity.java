@@ -2,11 +2,14 @@ package org.techtown.mycalendar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.PointF;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -21,17 +24,19 @@ import com.skt.Tmap.TMapData;
 import com.skt.Tmap.TMapMarkerItem;
 import com.skt.Tmap.TMapPOIItem;
 import com.skt.Tmap.TMapPoint;
+import com.skt.Tmap.TMapPolyLine;
 import com.skt.Tmap.TMapView;
 
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-    Button searchBtn;
-    EditText searchText;
+    Intent intent;
     String value;
     FloatingActionButton fab;
     TMapView tmapview;
-    InputMethodManager manager;
+    TMapPoint tMapPointStart;
+    TMapPoint tMapPointEnd = null;
+    private GpsTracker gpsTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,11 +47,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tmapview = new TMapView(this);
         tmapview.setSKTMapApiKey("l7xx9c10fb3dbac642078ebac04bd35fba5c");
 
-        searchBtn = findViewById(R.id.btn_search);
         fab = findViewById(R.id.fab_add);
-
-        searchBtn.setOnClickListener(this);
         fab.setOnClickListener(this);
+
+        gpsTracker = new GpsTracker(MainActivity.this);
 
         initialize(tmapview);
     }
@@ -55,42 +59,71 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent;
 
         switch (v.getId()) {
-            case R.id.btn_search:
-                search();
-                manager = (InputMethodManager)getSystemService(INPUT_METHOD_SERVICE);
-                manager.hideSoftInputFromWindow(searchBtn.getWindowToken(), 0);
-                break;
-
             //풍선뷰 화면 설정..
-            /*case R.id.fab_add:
-                intent = new Intent(getApplicationContext(), AddscheduleActivity.class);
-                SharedPreferences userlocation = getSharedPreferences("userlocation", MODE_PRIVATE);
-                String location = userlocation.getString("location","");
-                String location2 = location.substring(6);
-                intent.putExtra("location", location2); // 위치만
-                startActivity(intent);
-                finish();
-                break; */
+            case R.id.fab_add:
+                //intent = getIntent();
+                //String location = intent.getExtras().getString("location");
+
+                //ArrayList<String> arrBuilding = new ArrayList<>();
+                //arrBuilding.add(location);
+                //searchPOI(arrBuilding);
+                fab.setVisibility(View.INVISIBLE); //마커 설정 후 버튼 사라짐
+                break;
         }
     }
 
-    private void search() {
-        tmapview.removeAllMarkerItem();
-        findPOI();
-        ArrayList<String> arrBuilding = new ArrayList<>();
-        arrBuilding.add(value);
-        // 하나라도 검색하면 플로팅버튼 보이게
-        if(value.length() != 6) {
-            searchPOI(arrBuilding);
-            String location = arrBuilding.get(0);
-            fab.setVisibility(View.VISIBLE);
-            SharedPreferences userlocation= getSharedPreferences("userlocation", MODE_PRIVATE);
-            SharedPreferences.Editor editor= userlocation.edit();
-            editor.putString("location", location);
-            editor.commit();
+    private void road(ArrayList<TMapPoint> arrTPoint) {
+        String point;
+
+        double lat1 = gpsTracker.getLatitude();
+        double lon1 = gpsTracker.getLongitude();
+
+        /*tmapview.setCenterPoint(lon1, lat1);
+        tmapview.setLocationPoint(lon1, lat1);
+        setMultiMarkers2(lat1, lon1); //현재위치 마커표시*/
+
+        point = arrTPoint.get(0).toString();
+        Log.d("###", "POI: " + point);
+        String lat = (String) point.subSequence(4,15);
+        String lon = (String) point.subSequence(20,32);
+        double lat2 = Double.parseDouble(lat);
+        double lon2 = Double.parseDouble(lon);
+
+        Log.d("###", "lat1: " + lat1);
+        Log.d("###", "lon1: " + lon1);
+
+        Log.d("###", "lat2: " + lat2);
+        Log.d("###", "lon2: " + lon2);
+
+        tMapPointStart = new TMapPoint(lat1, lon1);
+        tMapPointEnd = new TMapPoint(lat2, lon2);
+
+        TMapPolyLine polyLine = new TMapPolyLine();
+        PathAsync pathAsync = new PathAsync();
+        pathAsync.execute(polyLine);
+    }
+
+    class PathAsync extends AsyncTask<TMapPolyLine, Void, TMapPolyLine> {
+        @Override
+        protected TMapPolyLine doInBackground(TMapPolyLine... tMapPolyLines) {
+            TMapPolyLine tMapPolyLine = tMapPolyLines[0];
+            try {
+                tMapPolyLine = new TMapData().findPathDataWithType(TMapData.TMapPathType.PEDESTRIAN_PATH, tMapPointStart, tMapPointEnd);
+                tMapPolyLine.setOutLineColor(Color.RED);
+                tMapPolyLine.setLineWidth(4);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                Log.e("error", e.getMessage());
+            }
+            return tMapPolyLine;
         }
-        else
-            Toast.makeText(MainActivity.this, "장소를 검색해주세요!", Toast.LENGTH_LONG).show();
+
+        @Override
+        protected void onPostExecute(TMapPolyLine tMapPolyLine) {
+            super.onPostExecute(tMapPolyLine);
+            tmapview.addTMapPolyLine("Line", tMapPolyLine);
+        }
     }
 
     private void initialize(TMapView tmapview) {
@@ -100,7 +133,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // 전북대로 설정
         tmapview.setOnClickListenerCallBack(mOnClickListenerCallback);
         tmapview.setZoomLevel(15);
-        tmapview.setCenterPoint(127.129436, 35.846964);
+
+        /*tmapview.setCenterPoint(lon1, lat1);
+        tmapview.setLocationPoint(lon1, lat1);
+        setMultiMarkers2(lat1, lon1); //현재위치 마커표시*/
     }
 
     // 주변 명칭 검색
@@ -121,20 +157,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         arrAddress.add(tMapPOIItem.upperAddrName + " " +
                                 tMapPOIItem.middleAddrName + " " + tMapPOIItem.lowerAddrName);
                     }
+                    road(arrTMapPoint);
                     setMultiMarkers(arrTMapPoint, arrTitle, arrAddress);
                 }
             });
         }
     }
-
-    private void findPOI() {
-        searchText = findViewById(R.id.text_search);
-        value = "전북대학교 " + searchText.getText().toString();
-    }
-
     // 마커 설정
-    private void setMultiMarkers(ArrayList<TMapPoint> arrTPoint, ArrayList<String> arrTitle,
-                                 ArrayList<String> arrAddress) {
+    private void setMultiMarkers(ArrayList<TMapPoint> arrTPoint, ArrayList<String> arrTitle, ArrayList<String> arrAddress) {
         for (int i = 0; i < arrTPoint.size(); i++) {
             Bitmap bitmapIcon = createMarkerIcon(R.drawable.poi_red);
 
@@ -147,6 +177,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             setBalloonView(tMapMarkerItem, arrTitle.get(i), arrAddress.get(i));
         }
+    }
+
+    private void setMultiMarkers2(double lat, double lon){
+        Bitmap bitmapIcon = createMarkerIcon(R.drawable.poi_dot);
+
+        TMapPoint tMapPoint = new TMapPoint(lat, lon);
+        TMapMarkerItem tMapMarkerItem = new TMapMarkerItem();
+        tMapMarkerItem.setIcon(bitmapIcon);
+
+        tMapMarkerItem.setTMapPoint(tMapPoint);
+
+        tmapview.addMarkerItem("markerItem", tMapMarkerItem);
+        tMapPointEnd = tMapMarkerItem.getTMapPoint();
     }
 
     // 풍선뷰
