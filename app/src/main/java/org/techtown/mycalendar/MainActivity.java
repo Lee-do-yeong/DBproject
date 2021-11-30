@@ -157,7 +157,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         arrAddress.add(tMapPOIItem.upperAddrName + " " +
                                 tMapPOIItem.middleAddrName + " " + tMapPOIItem.lowerAddrName);
                     }
-                    road(arrTMapPoint);
                     setMultiMarkers(arrTMapPoint, arrTitle, arrAddress);
                 }
             });
@@ -192,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tMapPointEnd = tMapMarkerItem.getTMapPoint();
     }
 
-    // 풍선뷰
+    // 풍선뷰 통해서 내용 연결
     private void setBalloonView(TMapMarkerItem marker, String title, String address) {
         marker.setCanShowCallout(true);
         if (marker.getCanShowCallout()) {
@@ -218,7 +217,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         @Override
         public boolean onPressUpEvent(ArrayList<TMapMarkerItem> arrayList, ArrayList<TMapPOIItem> arrayList1, TMapPoint tMapPoint, PointF pointF) {
-            return false;
+            /*final ArrayList<TMapPoint> arrTMapPoint = new ArrayList<>();
+            road(arrTMapPoint);*/ //지도 내 마커 클릭시 road 연결
+            return false; 
         }
     };
 }
