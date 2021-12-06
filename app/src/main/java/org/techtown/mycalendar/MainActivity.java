@@ -28,6 +28,7 @@ import com.skt.Tmap.TMapPolyLine;
 import com.skt.Tmap.TMapView;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     Intent intent;
@@ -51,6 +52,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         fab.setOnClickListener(this);
 
         gpsTracker = new GpsTracker(MainActivity.this);
+
+        List<Data> toiletList=initLoadToiletDatabase();
+        addToiletMarker(toiletList);
 
         initialize(tmapview);
     }
@@ -140,7 +144,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     // 주변 명칭 검색
-    private void searchPOI(ArrayList<String> arrPOI) {
+    /*private void searchPOI(ArrayList<String> arrPOI) {
         final TMapData tMapData = new TMapData();
         final ArrayList<TMapPoint> arrTMapPoint = new ArrayList<>();
         final ArrayList<String> arrTitle = new ArrayList<>();
@@ -161,22 +165,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             });
         }
-    }
-    // 마커 설정
-    private void setMultiMarkers(ArrayList<TMapPoint> arrTPoint, ArrayList<String> arrTitle, ArrayList<String> arrAddress) {
-        for (int i = 0; i < arrTPoint.size(); i++) {
-            Bitmap bitmapIcon = createMarkerIcon(R.drawable.poi_red);
+    }*/
+    //화장실 마커 설정 및 풍선뷰
+    public void addToiletMarker(List<Data>toiletList){
+        Bitmap bitmapIcon = createMarkerIcon(R.drawable.poi_red);
+        for(int i=0;i< toiletList.size();i++){
+            String toiletName=toiletList.get(i).toilet;
+            String address=toiletList.get(i).address;
+            double lat=toiletList.get(i).latitude;
+            double lon=toiletList.get(i).longitude;
 
-            TMapMarkerItem tMapMarkerItem = new TMapMarkerItem();
+            TMapPoint tMapPoint=new TMapPoint(lat,lon);
+            //티맵 마커 초기 설정
+            TMapMarkerItem tMapMarkerItem=new TMapMarkerItem();
             tMapMarkerItem.setIcon(bitmapIcon);
+            tMapMarkerItem.setPosition(0.5f,1.0f);
+            tMapMarkerItem.setTMapPoint(tMapPoint);
+            tMapMarkerItem.setName(toiletName);
+            //풍선뷰 초기설정
+            tMapMarkerItem.setCanShowCallout(true);
+            tMapMarkerItem.setCalloutTitle(toiletName);
+            tMapMarkerItem.setCalloutSubTitle(address);
+            tMapMarkerItem.setAutoCalloutVisible(false);
 
-            tMapMarkerItem.setTMapPoint(arrTPoint.get(i));
-
-            tmapview.addMarkerItem("markerItem" + i, tMapMarkerItem);
-
-            setBalloonView(tMapMarkerItem, arrTitle.get(i), arrAddress.get(i));
+            tmapview.addMarkerItem("toiletLocation"+i,tMapMarkerItem);
         }
     }
+
 
     private void setMultiMarkers2(double lat, double lon){
         Bitmap bitmapIcon = createMarkerIcon(R.drawable.poi_dot);
@@ -191,13 +206,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tMapPointEnd = tMapMarkerItem.getTMapPoint();
     }
 
-    // 풍선뷰 통해서 내용 연결
-    private void setBalloonView(TMapMarkerItem marker, String title, String address) {
-        marker.setCanShowCallout(true);
-        if (marker.getCanShowCallout()) {
-            marker.setCalloutTitle(title);
-            marker.setCalloutSubTitle(address);
-        }
+
+   //load database
+    public List<Data> initLoadToiletDatabase(){
+        DatabaseHelper databaseHelper=new DatabaseHelper(getApplicationContext());
+        databaseHelper.OpenDatabaseFile();
+
+        List<Data>toiletList=databaseHelper.getTableData();
+        Log.e("text",String.valueOf(toiletList.size()));
+
+        databaseHelper.close();
+        return toiletList;
     }
 
 
