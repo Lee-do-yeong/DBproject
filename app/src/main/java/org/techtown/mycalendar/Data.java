@@ -1,72 +1,35 @@
 package org.techtown.mycalendar;
 
-import androidx.room.Entity;
-import androidx.room.PrimaryKey;
 
-@Entity
-public class Data {
-    @PrimaryKey(autoGenerate = true)
-    private int uid;
-    private String todo;
-    private String date;
-    private String time;
-    private String location;
-    private String memo;
+public class Data{
 
-    public Data(String todo, String date, String time, String location, String memo) {
-        this.todo = todo;
-        this.date = date;
-        this.time = time;
-        this.location = location;
-        this.memo = memo;
-    }
+    public int _id;
+    public String type;
+    public String toilet;
+    public String address;
+    public double latitude;
+    public double longitude;
+    public String number;
+    public String time;
 
-    public int getUid() {
-        return uid;
-    }
+    //set function
+    public void setId(int _id) { this._id = _id; }
+    public void setType(String type){this.type=type;}
+    public void setToilet(String toilet){this.toilet=toilet;}
+    public void setAddress(String address){this.address=address;}
+    public void setLatitude(double latitude){this.latitude=latitude;}
+    public void setLongitude(double longitude){this.longitude=longitude;}
+    public void setNumber(String number){this.number=number;}
+    public void setTime(String time){this.time=time;}
 
-    public void setUid(int uid) {
-        this.uid = uid;
-    }
-
-    public String getTodo() {
-        return todo;
-    }
-
-    public void setTodo(String todo) {
-        this.todo = todo;
-    }
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public String getTime() {
-        return time;
-    }
-
-    public void setTime(String time) {
-        this.time = time;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getMemo() {
-        return memo;
-    }
-
-    public void setMemo(String memo) {
-        this.memo = memo;
-    }
-    
+    public int getID(){return this._id;}
+    public String getType(){return this.type;}
+    public String getToilet(){return this.toilet;}
+    public String getAddress(){return this.address;}
+    public double getLatitude() {return this.latitude;}
+    public double getLongitude() {return this.longitude;}
+    public String getNumber() {return this.number;}
+    public String getTime() {return this.time;}
 }
+
+
