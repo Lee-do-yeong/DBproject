@@ -78,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 double lat = tMapMarkerItem.latitude;
                 double lon = tMapMarkerItem.longitude;
                 road(lat, lon);
+                //tMapMarkerItem.setCanShowCallout(false);
             }
         });
     }
@@ -220,8 +221,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
         @Override
         public boolean onPressUpEvent(ArrayList<TMapMarkerItem> arrayList, ArrayList<TMapPOIItem> arrayList1, TMapPoint tMapPoint, PointF pointF) {
-            /*final ArrayList<TMapPoint> arrTMapPoint = new ArrayList<>();
-            road(arrTMapPoint);*/ //지도 내 마커 클릭시 road 연결
             return false; 
         }
     };
