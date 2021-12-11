@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 double lat = tMapMarkerItem.latitude;
                 double lon = tMapMarkerItem.longitude;
                 road(lat, lon);
-                //tMapMarkerItem.setCanShowCallout(false);
+                tMapMarkerItem.setCanShowCallout(false);
             }
         });
     }
@@ -155,8 +155,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Bitmap bitmapRight = createMarkerIcon(R.drawable.search);
 
         for(int i=0;i< toiletList.size();i++){
-            String toiletName=toiletList.get(i).toilet;
-            String address=toiletList.get(i).address;
+            String toiletName=toiletList.get(i).toilet + "(" + toiletList.get(i).type + ")";
+            String time=toiletList.get(i).time;
             double lat=toiletList.get(i).latitude;
             double lon=toiletList.get(i).longitude;
 
@@ -171,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             //풍선뷰 초기설정
             tMapMarkerItem.setCanShowCallout(true);
             tMapMarkerItem.setCalloutTitle(toiletName);
-            tMapMarkerItem.setCalloutSubTitle(address);
+            tMapMarkerItem.setCalloutSubTitle(time);
             tMapMarkerItem.setAutoCalloutVisible(false);
             tMapMarkerItem.setCalloutRightButtonImage(bitmapRight);
 
@@ -268,30 +268,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
-    public String getCurrentAddress(double latitude, double longitude) {
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-        List<Address> addresses;
-
-        try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 7);
-        } catch (IOException ioException) {
-            Toast.makeText(this, "지오코더 서비스 사용불가", Toast.LENGTH_LONG).show();
-            return "지오코더 서비스 사용불가";
-        } catch (IllegalArgumentException illegalArgumentException) {
-            Toast.makeText(this, "잘못된 GPS 좌표", Toast.LENGTH_LONG).show();
-            return "잘못된 GPS 좌표";
-        }
-
-        if (addresses == null || addresses.size() == 0) {
-            Toast.makeText(this, "주소 미발견", Toast.LENGTH_LONG).show();
-            return "주소 미발견";
-        }
-        Address address = addresses.get(0);
-        return address.getAddressLine(0).toString() + "\n";
-    }
-
     private void showDialogForLocationServiceSetting() {
-
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("위치 서비스 비활성화");
         builder.setMessage("앱을 사용하기 위해서는 위치 서비스가 필요합니다.\n" + "위치 설정을 진행하시겠습니까?");
