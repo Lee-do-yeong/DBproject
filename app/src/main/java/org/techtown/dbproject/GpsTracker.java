@@ -1,4 +1,4 @@
-package org.techtown.mycalendar;
+package org.techtown.dbproject;
 
 import android.Manifest;
 import android.app.Service;

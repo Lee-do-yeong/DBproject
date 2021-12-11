@@ -1,4 +1,4 @@
-package org.techtown.mycalendar;
+package org.techtown.dbproject;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -6,11 +6,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -23,12 +21,10 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.MapView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.skt.Tmap.TMapData;
 import com.skt.Tmap.TMapMarkerItem;
@@ -36,6 +32,8 @@ import com.skt.Tmap.TMapPOIItem;
 import com.skt.Tmap.TMapPoint;
 import com.skt.Tmap.TMapPolyLine;
 import com.skt.Tmap.TMapView;
+
+import org.techtown.dbproject.R;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -73,45 +71,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         gpsTracker = new GpsTracker(MainActivity.this);
 
         initialize(tmapview);
+
+        tmapview.setOnCalloutRightButtonClickListener(new TMapView.OnCalloutRightButtonClickCallback() {
+            @Override
+            public void onCalloutRightButton(TMapMarkerItem tMapMarkerItem) {
+                double lat = tMapMarkerItem.latitude;
+                double lon = tMapMarkerItem.longitude;
+                road(lat, lon);
+            }
+        });
     }
 
     public void onClick(View v) { // 플로팅 버튼 클릭 시에 화장실 마커 표시(플로팅 버튼은 사라짐)
         if(v.getId() == R.id.fab_add){
             List<Data> toiletList=initLoadToiletDatabase();
             addToiletMarker(toiletList);
-            //road(toiletList);
             fab.setVisibility(View.INVISIBLE); //마커 설정 후 버튼 사라짐
         }
     }
 
-    private void road(List<Data>toiletList) {
-        String point;
+    private void road(double lat, double lon) {
 
-        double lat1 = 35.846964;
-        double lon1 = 127.129436;
-
-        //double lat1 = gpsTracker.getLatitude();
-        //double lon1 = gpsTracker.getLongitude();
-
-        //tmapview.setCenterPoint(lon1, lat1);
-        //tmapview.setLocationPoint(lon1, lat1);
-        setMultiMarkers2(lat1, lon1); //현재위치 마커표시*/
-
-        point = toiletList.get(0).toString();
-        Log.d("###", "POI: " + point);
-        String lat = (String) point.subSequence(4,15);
-        String lon = (String) point.subSequence(20,32);
-        double lat2 = Double.parseDouble(lat);
-        double lon2 = Double.parseDouble(lon);
+        double lat1 = gpsTracker.getLatitude();
+        double lon1 = gpsTracker.getLongitude();
 
         Log.d("###", "lat1: " + lat1);
         Log.d("###", "lon1: " + lon1);
 
-        Log.d("###", "lat2: " + lat2);
-        Log.d("###", "lon2: " + lon2);
+        Log.d("###", "lat2: " + lat);
+        Log.d("###", "lon2: " + lon);
 
         tMapPointStart = new TMapPoint(lat1, lon1);
-        tMapPointEnd = new TMapPoint(lat2, lon2);
+        tMapPointEnd = new TMapPoint(lat, lon);
 
         TMapPolyLine polyLine = new TMapPolyLine();
         PathAsync pathAsync = new PathAsync();
@@ -152,38 +143,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         double lat1 = gpsTracker.getLatitude();
         double lon1 = gpsTracker.getLongitude();
 
-
         tmapview.setCenterPoint(lon1, lat1);
         tmapview.setLocationPoint(lon1, lat1);
         setMultiMarkers2(lat1, lon1); //현재위치 마커표시
     }
 
-    // 주변 명칭 검색
-    /*private void searchPOI(ArrayList<String> arrPOI) {
-        final TMapData tMapData = new TMapData();
-        final ArrayList<TMapPoint> arrTMapPoint = new ArrayList<>();
-        final ArrayList<String> arrTitle = new ArrayList<>();
-        final ArrayList<String> arrAddress = new ArrayList<>();
-
-        for (int i = 0; i < arrPOI.size(); i++) {
-            tMapData.findTitlePOI(arrPOI.get(i), new TMapData.FindTitlePOIListenerCallback() {
-                @Override
-                public void onFindTitlePOI(ArrayList<TMapPOIItem> arrayList) {
-                    for (int j = 0; j < arrayList.size(); j++) {
-                        TMapPOIItem tMapPOIItem = arrayList.get(j);
-                        arrTMapPoint.add(tMapPOIItem.getPOIPoint());
-                        arrTitle.add(tMapPOIItem.getPOIName());
-                        arrAddress.add(tMapPOIItem.upperAddrName + " " +
-                                tMapPOIItem.middleAddrName + " " + tMapPOIItem.lowerAddrName);
-                    }
-                    setMultiMarkers(arrTMapPoint, arrTitle, arrAddress);
-                }
-            });
-        }
-    }*/
     //화장실 마커 설정 및 풍선뷰
     public void addToiletMarker(List<Data>toiletList){
         Bitmap bitmapIcon = createMarkerIcon(R.drawable.poi_red);
+        Bitmap bitmapRight = createMarkerIcon(R.drawable.search);
+
         for(int i=0;i< toiletList.size();i++){
             String toiletName=toiletList.get(i).toilet;
             String address=toiletList.get(i).address;
@@ -197,16 +166,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             tMapMarkerItem.setPosition(0.5f,1.0f);
             tMapMarkerItem.setTMapPoint(tMapPoint);
             tMapMarkerItem.setName(toiletName);
+
             //풍선뷰 초기설정
             tMapMarkerItem.setCanShowCallout(true);
             tMapMarkerItem.setCalloutTitle(toiletName);
             tMapMarkerItem.setCalloutSubTitle(address);
             tMapMarkerItem.setAutoCalloutVisible(false);
+            tMapMarkerItem.setCalloutRightButtonImage(bitmapRight);
 
             tmapview.addMarkerItem("toiletLocation"+i,tMapMarkerItem);
         }
     }
-
 
     private void setMultiMarkers2(double lat, double lon){
         Bitmap bitmapIcon = createMarkerIcon(R.drawable.poi_dot);
@@ -222,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         tMapPointEnd = tMapMarkerItem.getTMapPoint();
     }
 
-
    //load database
     public List<Data> initLoadToiletDatabase(){
         DatabaseHelper databaseHelper=new DatabaseHelper(getApplicationContext());
@@ -234,7 +203,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         databaseHelper.close();
         return toiletList;
     }
-
 
     private Bitmap createMarkerIcon(int image) {
         Log.e("MapViewActivity", "(F)   createMarkerIcon()");

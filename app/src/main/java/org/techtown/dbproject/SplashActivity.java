@@ -1,4 +1,4 @@
-package org.techtown.mycalendar;
+package org.techtown.dbproject;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+
+import org.techtown.dbproject.R;
 
 public class SplashActivity extends AppCompatActivity {
     Handler handler;

@@ -1,4 +1,4 @@
-package org.techtown.mycalendar;
+package org.techtown.dbproject;
 
 
 public class Data{

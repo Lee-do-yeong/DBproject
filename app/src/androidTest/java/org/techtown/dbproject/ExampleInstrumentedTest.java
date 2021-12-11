@@ -1,4 +1,4 @@
-package org.techtown.mycalendar;
+package org.techtown.dbproject;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("org.techtown.mycalendar", appContext.getPackageName());
+        assertEquals("org.techtown.dbproject", appContext.getPackageName());
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.techtown.mycalendar">
+    package="org.techtown.dbproject">
 
     <uses-permission android:name="android.permission.INTERNET"></uses-permission>
 
@@ -20,7 +20,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Design.Light.NoActionBar">
         <activity android:name=".MainActivity" />
-        <activity android:name=".SplashActivity">
+        <activity android:name="org.techtown.dbproject.SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
